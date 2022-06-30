@@ -1,0 +1,12 @@
+local_install_dir: .local/share/dotfiles
+global_install_dir: /usr/share/dotfiles
+ignore:
+    - .git
+    - .dotfiles
+    - config
+    - .dotfilesignore
+    - .dotfilescollections
+ignore_file: .dotfilesignore
+hooks_dir: hooks
+collections_config:
+    file: .dotfilescollections

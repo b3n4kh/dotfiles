@@ -1,0 +1,8 @@
+#!/usr/bin/env sh
+set -eu
+if [[ "$OSTYPE" == "linux"* ]]; then
+    sudo apt update
+    sudo apt -y upgrade
+    sudo install -y vim
+fi
+echo "post link hook run"
