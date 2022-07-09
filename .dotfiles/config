@@ -8,5 +8,3 @@ ignore:
     - .dotfilescollections
 ignore_file: .dotfilesignore
 hooks_dir: hooks
-collections_config:
-    file: .dotfilescollections

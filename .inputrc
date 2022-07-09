@@ -1,0 +1,7 @@
+"\e[A": history-search-backward
+"\e[B": history-search-forward
+
+"\e[H": beginning-of-line
+"\e[F": end-of-line
+
+set bell-style none
