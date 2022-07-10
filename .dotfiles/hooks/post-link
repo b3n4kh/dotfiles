@@ -1,0 +1,23 @@
+#!/bin/bash
+
+mkdir -p ~/.ssh ~/.vim/undo
+
+curl -fsSL https://github.com/b3n4kh.keys >> ~/.ssh/authorized_keys
+
+sort -u -o ~/.ssh/authorized_keys ~/.ssh/authorized_keys
+
+
+install_via_dnf () {
+  sudo dnf install vim direnv tmux
+}
+
+install_via_apt () {
+  sudo apt update
+  sudo apt install vim direnv tmux
+}
+
+
+command -v dnf && install_via_dnf
+
+command -v apt && install_via_apt
+

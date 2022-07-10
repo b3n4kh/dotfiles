@@ -4,6 +4,7 @@ set tabstop=3
 set shiftwidth=3
 
 set undofile
+set undodir=~/.vim/undo
 set undolevels=1000
 set undoreload=10000
 
