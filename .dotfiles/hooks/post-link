@@ -8,16 +8,18 @@ sort -u -o ~/.ssh/authorized_keys ~/.ssh/authorized_keys
 
 
 install_via_dnf () {
-  sudo dnf install vim direnv tmux
+  sudo dnf install vim direnv tmux git
 }
 
 install_via_apt () {
   sudo apt update
-  sudo apt install vim direnv tmux
+  sudo apt install vim direnv tmux git
 }
 
 
 command -v dnf && install_via_dnf
 
 command -v apt && install_via_apt
+
+git clone https://github.com/magicmonty/bash-git-prompt.git ~/.bash-git-prompt
 

@@ -22,3 +22,8 @@ shopt -s autocd
 
 complete -cf sudo
 complete -cf man
+
+source ~/.bash-git-prompt/gitprompt.sh
+eval "$(dircolors -b ~/.dir_colors)"
+eval "$(direnv hook bash)"
+
