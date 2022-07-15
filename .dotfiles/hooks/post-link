@@ -21,5 +21,9 @@ command -v dnf && install_via_dnf
 
 command -v apt && install_via_apt
 
-git clone https://github.com/magicmonty/bash-git-prompt.git ~/.bash-git-prompt
+if cd ~/.bash-git-prompt; then
+	git pull
+else
+   git clone https://github.com/magicmonty/bash-git-prompt.git ~/.bash-git-prompt
+fi
 
