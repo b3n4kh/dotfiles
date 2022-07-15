@@ -10,6 +10,8 @@ export LESS=' -R '
 export HISTSIZE=100000
 export HISTFILESIZE=100000
 export LS_OPTIONS='--color=auto'
+GIT_PROMPT_ONLY_IN_REPO=1
+GIT_PROMPT_THEME=Single_line
 
 alias top='htop'
 alias ll='ls -lah'
