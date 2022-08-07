@@ -112,6 +112,12 @@ function parse_status() {
 
   IFS="^" read -ra branch_fields <<< "${branch_line/\#\# }"
   branch="${branch_fields[0]}"
+  if [[ "${#branch_fields[@]}" -eq 1 ]]; then
+    remote="."
+  else
+    IFS="[,]" read -ra remote_fields <<< "${branch_fields[1]}"
+    upstream="${remote_fields[0]}"
+  fi
 
   has_remote_tracked="$(has_remote_tracked "${branch}"; echo $?)"
   read branch_ahead branch_behind <<< "$(get_distance_ahead_behind "${branch}")"
