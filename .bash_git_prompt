@@ -1,0 +1,185 @@
+#!/usr/bin/env bash
+
+reset="\001\e[m\002"
+bold="\001\e[1m\002"
+
+red="\001\e[1;31m\002"
+white="\001\e[1;37m\002"
+green="\001\e[1;32m\002"
+blue="\001\e[1;34m\002"
+yellow="\001\e[1;33m\002"
+purple="\001\e[1;35m\002"
+orange="\001\e[1;33m\002"
+
+branch_status_color="${purple}"
+stashed_color="${orange}"
+conflict_color="${red}"
+staged_color="${blue}"
+modified_color="${red}"
+clean_color="${green}"
+untracked_color="${white}"
+
+submodule_symbol="${branch_status_color}${bold}⊆${reset}${branch_status_color}"
+ahead_symbol="${branch_status_color}🠅"
+behind_symbol="${branch_status_color}🠇"
+stashed_symbol="${stashed_color}⚑"
+conflict_symbol="${conflict_color}⨯"
+staged_symbol="${staged_color}●"
+modified_symbol="${modified_color}${bold}+${reset}${modified_color}"
+clean_symbol="${clean_color}✓"
+untracked_symbol="${untracked_color}…"
+
+function we_are_on_repo() {
+  if [[ -e "$(git rev-parse --git-dir 2> /dev/null)" ]]; then
+    echo 1
+  else
+    echo 0
+  fi
+}
+
+function get_branch() {
+  # On branches, this will return the branch name
+  # On non-branches, (no branch)
+  ref="$(git symbolic-ref HEAD 2> /dev/null | sed -e 's/refs\/heads\///')"
+  if [[ ! -z ${ref} ]]; then
+    echo "${ref}"
+  else
+    echo "no-branch"
+  fi
+}
+
+function get_superproject() {
+  superproject=$(git rev-parse --show-superproject-working-tree)
+  echo "${superproject}"
+}
+
+function has_remote_tracked() {
+  branch="$1"
+  remote="$(git config "branch.${branch}.remote")"
+  [[ $? -eq 0 && $remote != '.' ]]
+}
+
+function get_distance_ahead_behind() {
+  branch="$1"
+  remote="$(git config --get "branch.${branch}.remote" || echo -n "origin")"
+  remote_branch="${remote}/${branch}"
+  echo "$(git rev-list --left-right --count ${branch}...${remote_branch} 2>/dev/null)"
+}
+
+function get_num_stashed() {
+  echo "$(git stash list | wc -l | xargs)"
+}
+
+function get_num_conflict() {
+  echo "$(git diff --name-only --diff-filter=U | wc -l | xargs)"
+}
+
+
+function get_num_untracked() {
+  echo "$(git ls-files --others --exclude-standard $(git rev-parse --show-toplevel) | wc -l | xargs)"
+}
+
+function get_num_modified() {
+  modified=$(git ls-files --modified $(git rev-parse --show-toplevel) | uniq)
+  unmerged=$(git ls-files --unmerged $(git rev-parse --show-toplevel) | awk '{ print $NF }' | uniq)
+  if [[ $(echo "${unmerged}" | sed '/^$/d' | wc -l | xargs) -gt 0 ]]; then
+    echo "$(grep --invert-match --count --fixed-strings --file=<(echo $unmerged) <(echo $modified))"
+  else
+    echo "$(echo "${modified}" | sed '/^$/d' | wc -l | xargs)"
+  fi
+}
+
+function get_num_staged() {
+  echo "$(git diff --cached --numstat --diff-filter=u | wc -l | xargs)"
+}
+
+function is_on_git() {
+  git rev-parse 2> /dev/null
+}
+
+function get_status() {
+  branch=$1
+  has_remote_tracked="$(has_remote_tracked "${branch}"; echo $?)"
+  read branch_ahead branch_behind <<< "$(get_distance_ahead_behind "${branch}")"
+  stashed="$(get_num_stashed)"
+  conflict="$(get_num_conflict)"
+  untracked="$(get_num_untracked)"
+  modified="$(get_num_modified)"
+  staged="$(get_num_staged)"
+
+  if [[ ! -z ${branch_behind+x} && $branch_behind -gt 0 ]]; then
+    echo -n "${behind_symbol}${branch_behind}"
+  fi
+
+  if [[ ! -z ${branch_ahead+x} && $branch_ahead -gt 0 ]]; then
+    echo -n "${ahead_symbol}${branch_ahead}"
+  fi
+  
+  remote_status="${remote_status}L"
+  if [[ $has_remote_tracked -ne 0 ]]; then
+    remote_status="${remote_status}U"
+  fi
+  
+  if [[ ! -z ${remote_status+x} ]]; then
+    echo -n "${purple}:${remote_status}"
+  fi
+
+  if [[ ! -z ${stashed+x} && $stashed -gt 0 ]]; then
+    status="${status}${stashed_symbol}${stashed}"
+  fi
+
+  if [[ ! -z ${conflict+x} && $conflict -gt 0 ]]; then
+    status="${status}${conflict_symbol}${conflict}"
+  fi
+
+  if [[ ! -z ${staged+x} && $staged -gt 0 ]]; then
+    status="${status}${staged_symbol}${staged}"
+  fi
+
+  if [[ ! -z ${modified+x} && $modified -gt 0 ]]; then
+    status="${status}${modified_symbol}${modified}"
+  fi
+
+  if [[ -z ${status+x} ]]; then
+    status="${clean_symbol}"
+  fi
+
+  if [[ ! -z ${untracked+x} && $untracked -gt 0 ]]; then
+    status="${status}${untracked_symbol}${untracked}"
+  fi
+
+  echo -n "${reset}|${status}"
+}
+
+function print_git_prompt() {
+  if ! is_on_git; then
+    return 0
+  fi
+
+  # Grab the branch
+  branch="$(get_branch)"
+
+  # If there are any branches
+  if [[ ! -z $branch ]]; then
+
+    # Add on the git status
+    status="$(get_status "$branch")"
+
+    superproject="$(get_superproject)"
+
+    # Echo our output
+
+    echo -en "${reset}["
+
+    if [[ ! -z $superproject ]]; then
+      echo -en "${submodule_symbol}${reset}:"
+    fi
+
+    echo -en "${branch}"
+    echo -en "${status}"
+    echo -en "${reset}"
+
+    echo -n "] "
+  fi
+}
+
