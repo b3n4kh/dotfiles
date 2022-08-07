@@ -1,6 +1,5 @@
 PS1='\[\e[0;32m\]\u\[\e[0;31m\]@\[\e[0;32m\]\h\[\e[m\] \[\e[0;34m\]\W\[\e[m\] '
 
-
 export EDITOR="vim"
 export HISTCONTROL=ignoreboth:erasedups
 export LESS=' -R '
@@ -26,3 +25,6 @@ PS1="$PS1\$(print_git_prompt)\[\e[1;02m\]\$\[\e[m\] "
 eval "$(dircolors -b ~/.dir_colors)"
 eval "$(direnv hook bash)"
 
+if [[ -f ~/.bashrc.local ]]; then
+  source ~/.bashrc.local
+fi

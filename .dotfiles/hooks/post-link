@@ -22,4 +22,3 @@ command -v dnf && install_via_dnf
 command -v apt && install_via_apt
 
 echo "PS1='\[\e[0;31m\]\u\[\e[0;32m\]@\[\e[0;31m\]\h\[\e[m\] \[\e[0;34m\]\W\[\e[m\] \[\e[0;31m\]\$\[\e[m\] '" | sudo tee /etc/profile.d/prompt.sh
-
