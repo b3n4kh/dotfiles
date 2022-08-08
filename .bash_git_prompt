@@ -165,12 +165,20 @@ function parse_status() {
   echo -n "${reset}|${status}"
 }
 
+function print_bare() {
+	bare_state=$(git symbolic-ref HEAD)
+	echo -en "[__BARE__:${bare_state#refs/heads/}] "
+}
+
 function print_git_prompt() {
   git_dir="$(get_git_dir)"
   [[ -z "${git_dir:+x}" ]] && exit 0
 
-  gitstatus=$(git status)
-  [[ ! "${?}" ]] && exit 0
+  gitstatus=$(git status 2>/dev/null)
+  if [[ ! "${?}" ]] || [[ -z "${gitstatus:+x}" ]]; then
+	  print_bare
+	  exit 0
+  fi
 
   if [[ ! -z $GIT_PROMPT_SHOW_ADDITIONAL ]]; then
     superproject="$(get_superproject)"
