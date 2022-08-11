@@ -32,12 +32,6 @@ function get_superproject() {
   echo "${superproject}"
 }
 
-function has_remote_tracked() {
-  branch="$1"
-  remote="$(git config "branch.${branch}.remote")"
-  [[ $? -eq 0 && $remote != '.' ]]
-}
-
 function get_distance_ahead_behind() {
   branch="$1"
   remote="$(git config --get "branch.${branch}.remote" || echo -n "origin")"
@@ -66,6 +60,7 @@ function get_git_dir() {
 }
 
 function parse_status() {
+  git_dir=$1
   gitstatus="$(LC_ALL=C git status --porcelain --branch 2> /dev/null)"
   [[ -z "${gitstatus:+x}" ]] && exit 0
 
@@ -114,7 +109,6 @@ function parse_status() {
     upstream="${remote_fields[0]}"
   fi
 
-  has_remote_tracked="$(has_remote_tracked "${branch}"; echo $?)"
   read branch_ahead branch_behind <<< "$(get_distance_ahead_behind "${branch}")"
 
   echo -n "${purple}${branch}${reset}"
@@ -129,7 +123,7 @@ function parse_status() {
   
   if [[ $remote == "." ]]; then
     echo -n ":L"
-  elif [[ $has_remote_tracked -ne 0 ]]; then
+  elif [[ -z $upstream ]]; then
     echo -n ":U"
   fi
 
@@ -183,7 +177,7 @@ function print_git_prompt() {
   # Echo our output
 
   echo -en "${reset}["
-  echo -en "$(parse_status)"
-  echo -en "$(get_git_status "$git_dir")"
+  echo -en "$(parse_status "${git_dir}")"
+  echo -en "$(get_git_status "${git_dir}")"
   echo -en "${reset}] "
 }
